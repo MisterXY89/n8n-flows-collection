@@ -1,0 +1,563 @@
+{
+  "name": "Reciept OCR Archive",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {
+          "download": true
+        }
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        288,
+        -608
+      ],
+      "id": "8ead0832-00fd-4001-a5b0-ebb6db67b572",
+      "name": "Telegram Trigger",
+      "webhookId": "e10ad9a0-59da-4a62-9ccb-0b9331bf0104",
+      "credentials": {
+        "telegramApi": {
+          "id": "h7G4cLj9pTMKsZcV",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "inputType": "binary"
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        528,
+        -608
+      ],
+      "id": "2f5ff870-e0d7-4fa6-b25f-2b6731700b43",
+      "name": "Upload a file",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wbG4g0hFcZb3IvvM",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// extracts json from ```json ... ``` or uses the raw text, then parses\nconst text = $json?.content?.parts?.[0]?.text ?? '';\nconst m = text.match(/```(?:json)?\\s*([\\s\\S]*?)\\s*```/i);\nconst jsonStr = m ? m[1] : text; // keep it simple: prefer fenced block\n// fix common quote issues from LLMs\nconst cleaned = jsonStr\n  .replace(/\\u201C|\\u201D|\\u201E|\\u201F/g, '\"') // smart double quotes -> \"\n  .replace(/\\u2018|\\u2019/g, \"'\");              // smart single quotes -> '\nlet parsed;\ntry {\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  throw new Error(`failed to parse OCR json: ${e.message}`);\n}\nreturn parsed;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        -608
+      ],
+      "id": "fbae1d3f-03e1-48c7-847d-1e82b41f50e2",
+      "name": "Parse JSON"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{\n`Einkauf erfasst ✅\n\nStore: ${$('Set fields').item.json.store_name}\nDatum: ${$('Set fields').item.json.einkauf_date}\nGesamt: ${$('Set fields').item.json.total} ${$('Set fields').item.json.currency}\nID: ${$('Set fields').item.json.einkauf_id}\n\nHier alle Items einsehen: https://noco.quantr.xyz/dashboard/#/nc/p0i3rdvxdt8rl4c/m5rs1vv6e2im9dw/vwvc2avyza6aq0ip`\n}}\n",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2960,
+        -624
+      ],
+      "id": "f31619fe-b318-4ac4-93fb-f46296e84e59",
+      "name": "Send Confirmation",
+      "webhookId": "f8a9385a-2a3a-4870-86f8-a0796f9d29e2",
+      "credentials": {
+        "telegramApi": {
+          "id": "h7G4cLj9pTMKsZcV",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "create",
+        "projectId": "p0i3rdvxdt8rl4c",
+        "table": "m5rs1vv6e2im9dw",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "product",
+              "fieldValue": "={{ $('Set fields').item.json.name }}"
+            },
+            {
+              "fieldName": "quantity",
+              "fieldValue": "={{ $('Set fields').item.json.quantity }}"
+            },
+            {
+              "fieldName": "=unit_price",
+              "fieldValue": "={{ $('Set fields').item.json.unit_price }}"
+            },
+            {
+              "fieldName": "total_price",
+              "fieldValue": "={{ $('Set fields').item.json.total_price }}"
+            },
+            {
+              "fieldName": "store_name",
+              "fieldValue": "={{ $('Set fields').item.json.store_name }}"
+            },
+            {
+              "fieldName": "=einkauf_date",
+              "fieldValue": "={{ $('Set fields').item.json.einkauf_date }}"
+            },
+            {
+              "fieldName": "item_id",
+              "fieldValue": "={{ $('Set fields').item.json.item_id }}"
+            },
+            {
+              "fieldName": "Id",
+              "fieldValue": "={{ $('Set fields').item.json.item_id }}"
+            },
+            {
+              "fieldName": "einkauf_id",
+              "fieldValue": "={{ $('Set fields').item.json.einkauf_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        2960,
+        -272
+      ],
+      "id": "503ce3b1-fbfe-4f8c-a42e-a2269dec0299",
+      "name": "Write to DB",
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "vwwY5pBBrhmp8Y2k",
+          "name": "NocoDB Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "You are given the full raw text extracted via OCR from a grocery store receipt.  \nPlease parse and extract the following fields in JSON exactly as shown:\n\n{\n  \"store_name\": string or null,\n  \"date\": ISO-8601 date string (YYYY-MM-DD) or null,\n  \"time\": 24h-format (HH:MM) or null,\n  \"receipt_number\": string or null,\n  \"items\": [\n    {\n      \"name\": string,\n      \"quantity\": integer or null,\n      \"unit_price\": number or null,\n      \"total_price\": number or null\n    },\n    … \n  ],\n  \"subtotal\": number or null,\n  \"tax\": number or null,\n  \"total\": number or null,\n  \"currency\": string (e.g., \"EUR\", \"USD\") or null\n}\n\nIf any field cannot be confidently extracted, set it to null and add an additional field `\"uncertain_fields\": [ list of field names ]`.\n\nOnly output valid JSON (no extra explanation).  \nEnsure numeric fields use dot as decimal separator.  \nUse best effort to match items to their prices.",
+        "imageUrls": "={{ $json.fileUri }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        784,
+        -608
+      ],
+      "id": "055b3074-578f-40df-9b19-2c0476543fc6",
+      "name": "OCR",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wbG4g0hFcZb3IvvM",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "items",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1328,
+        -608
+      ],
+      "id": "3b319a33-4a0a-4fc8-aa07-39b32e646990",
+      "name": "Split Out1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1552,
+        -608
+      ],
+      "id": "119e667c-c37b-4286-8888-c6afef51d918",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e1b320e2-8a3d-4193-b07b-5d948e19b6ef",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "f48fab98-424f-472a-99a6-7c1a228ac10c",
+              "name": "quantity",
+              "value": "={{ $json.quantity }}",
+              "type": "number"
+            },
+            {
+              "id": "88aa33f0-1252-4dc9-bdc2-16befcdffba7",
+              "name": "unit_price",
+              "value": "={{ $json.unit_price }}",
+              "type": "number"
+            },
+            {
+              "id": "899e9764-b8e4-4edb-ac85-1c264be8f14b",
+              "name": "total_price",
+              "value": "={{ $json.total_price }}",
+              "type": "number"
+            },
+            {
+              "id": "8e2ff8ae-4107-4cfe-a24a-200b90e9e245",
+              "name": "einkauf_date",
+              "value": "={{ $('Parse JSON').item.json.date }}",
+              "type": "string"
+            },
+            {
+              "id": "de6bff57-6774-4281-936b-06497d4a4ac2",
+              "name": "store_name",
+              "value": "={{ $('Parse JSON').item.json.store_name }}",
+              "type": "string"
+            },
+            {
+              "id": "44edb9dc-8296-442d-a0b6-d933a290f757",
+              "name": "currency",
+              "value": "={{ $('Parse JSON').item.json.currency }}",
+              "type": "string"
+            },
+            {
+              "id": "b78eb485-339c-4621-9319-f2f1fc90e049",
+              "name": "total",
+              "value": "={{ $('Parse JSON').item.json.total }}",
+              "type": "number"
+            },
+            {
+              "id": "04a57a8a-97fc-4b39-88a5-1a6c5b41cc9e",
+              "name": "item_id",
+              "value": "={{ (() => {\n  const s = `${$json.name}|${$json.quantity}|${$json.unit_price}|${$json.total_price}|${$('Parse JSON').item.json.date}|${$('Parse JSON').item.json.store_name}|${$('Parse JSON').item.json.currency}|${$('Parse JSON').item.json.total}`;\n  let h = 0;\n  for (let i = 0; i < s.length; i++) {\n    h = ((h << 5) - h) + s.charCodeAt(i);\n    h |= 0;\n  }\n  return (Math.abs(h));\n})() }}",
+              "type": "string"
+            },
+            {
+              "id": "6820195b-bf07-481f-9874-08a14f0d6206",
+              "name": "einkauf_id",
+              "value": "={{ (() => {   const s = `${$('Parse JSON').item.json.date}|${$('Parse JSON').item.json.store_name}|${$('Parse JSON').item.json.currency}|${$('Parse JSON').item.json.total}`;   let h = 0;   for (let i = 0; i < s.length; i++) {     h = ((h << 5) - h) + s.charCodeAt(i);     h |= 0;   }   return ('' + Math.abs(h).toString(16)).trim(); })() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1808,
+        -496
+      ],
+      "id": "5263007a-1dd9-439b-9c31-83e258f4a9c5",
+      "name": "Set fields"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "projectId": "p0i3rdvxdt8rl4c",
+        "table": "m5rs1vv6e2im9dw",
+        "id": "={{ $json.item_id }}"
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        2192,
+        -432
+      ],
+      "id": "04bfcb68-5500-4179-ad7d-4a80435f811f",
+      "name": "Check If Exists",
+      "alwaysOutputData": true,
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "vwwY5pBBrhmp8Y2k",
+          "name": "NocoDB Token account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "472a9b09-cd64-4755-8aa1-71b48c14e162",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "e8c77b1c-764d-4db8-a9db-16cd7fcfe42b",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "NodeApiError: The resource you are requesting could not be found",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2576,
+        -368
+      ],
+      "id": "78dceebc-6379-4185-bba7-4f33946e1e64",
+      "name": "Does Not Exists"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9c9e0ec5-3d16-4858-95b1-5104bc04009f",
+              "name": "store_name",
+              "value": "={{ $('Parse JSON').item.json.store_name }}",
+              "type": "string"
+            },
+            {
+              "id": "90aafd7c-6413-47bc-8842-64aef02d489b",
+              "name": "date",
+              "value": "={{ $('Parse JSON').item.json.date }}",
+              "type": "string"
+            },
+            {
+              "id": "63a21aa9-0790-491e-aeac-8cf11ace2996",
+              "name": "total",
+              "value": "={{ $('Parse JSON').item.json.total }}",
+              "type": "number"
+            },
+            {
+              "id": "48953a00-e78e-4a28-81cb-9ca65e8bf8a9",
+              "name": "einkauf_id",
+              "value": "={{ $('Set fields').item.json.einkauf_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2096,
+        -624
+      ],
+      "id": "21ccb3ab-2770-4316-8601-a3cf65c8cdf1",
+      "name": "Set Report Fields"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        2400,
+        -624
+      ],
+      "id": "6493eeb7-d6c5-4d9e-8b9b-9e88f0217c01",
+      "name": "Limit"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Upload a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload a file": {
+      "main": [
+        [
+          {
+            "node": "OCR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse JSON": {
+      "main": [
+        [
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write to DB": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OCR": {
+      "main": [
+        [
+          {
+            "node": "Parse JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Set Report Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set fields": {
+      "main": [
+        [
+          {
+            "node": "Check If Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check If Exists": {
+      "main": [
+        [
+          {
+            "node": "Does Not Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Does Not Exists": {
+      "main": [
+        [
+          {
+            "node": "Write to DB",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Report Fields": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Send Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "cb955131-3e8f-40cd-8ddc-ba84d8ecc842",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f2e4cbf3194843e52dc6d54b02774a25bc3480f66c7f04c30409e16115b3fe89"
+  },
+  "id": "WzAG6FJhzfygIRqN",
+  "tags": []
+}

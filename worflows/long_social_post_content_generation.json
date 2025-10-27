@@ -1,0 +1,831 @@
+{
+  "name": "Long Social Post Content Generation",
+  "nodes": [
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-nano",
+          "mode": "list",
+          "cachedResultName": "GPT-5-NANO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a professional content writer specialized in factual, research-based articles. \nWrite a complete blog post based on the following inputs.\n\nContext: Professional information website.\nTarget audience: Practitioners, decision-makers, and interested readers.\nTone: objective, neutral, informative.\n\nInputs:\n- Outline: {{ $json.message.content }}\n\nTask:\nProduce a coherent, journalistic-style blog article that follows the structure defined in the outline.\n\nRequirements:\n1. Title (H1): use or adapt from the outline\n2. Introduction (80–120 words): introduce the topic and explain its relevance to a general professional audience\n3. Main section: follow the outlined structure (keep H2 headings)\n   - fact-based, supported by context, examples, or practical insights\n   - explain technical terms briefly when they first appear\n4. Conclusion (H2): provide a neutral summary without calls to action\n\nFormat:\n- Output in Markdown\n- correct heading hierarchy (H1 → H2 → optionally H3)\n- concise and factual language, no marketing tone, no filler content\n- do not invent data, statistics, or sources\n- **Output only the finished article — no explanations, notes, or meta comments.**\n\nGoal: A well-structured, complete blog article that turns the outline and input into a coherent, professional text.\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        2320,
+        816
+      ],
+      "id": "03fc5ec5-0ae2-4b14-98bf-c93ed1ef7319",
+      "name": "Writing"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an experienced professional content strategist. \nCreate a clear, SEO-optimized blog outline based on the following inputs.\n\nContext: Professional information website. \nTarget audience: practitioners, decision-makers, and informed readers. \nTone: objective, neutral, informative.\n\nInputs:\n- Category: {{ $('Notion Blog Post Idea Trigger').item.json.Category }}\n- Title: {{ $('Notion Blog Post Idea Trigger').item.json.Title }}\n- Summary: {{ $json.summary }}\n- Key_Aspects: {{ $json.key_aspects }}\n- Topics: {{ $json.topics }}\n- Sources: {{ $json.sources }}\n\nTask:\nAnalyze the provided material and develop a well-structured, logically organized outline for a blog post that is also optimized for search engines.\n\nRequirements:\n- Language: English\n- Use clear section headings (H2) containing relevant keywords from the title, category, and topics.\n- Write short section descriptions (2–4 sentences) that summarize the intended content.\n- Cover the following aspects where applicable:\n  • Overview of the topic  \n  • Background or historical context  \n  • Current trends or perspectives  \n  • Challenges or controversies  \n  • Future outlook or implications\n- Use paragraph-style text, not bullet lists.\n- Focus on condensation and logical structure rather than repetition of source content.\n\nSEO note:\nIntegrate key terms naturally into headings and text; avoid keyword stuffing.\n\nGoal:\nA coherent, readable, SEO-friendly outline to serve as the foundation for a full blog article.\n"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1952,
+        816
+      ],
+      "id": "d53e635c-bb6a-4396-ae07-b7e4df99bb8e",
+      "name": "Outline"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.links[0] }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:144.0) Gecko/20100101 Firefox/144.0"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        640,
+        720
+      ],
+      "id": "97b5f7d7-01f4-469a-bde2-578e6acfd3f7",
+      "name": "Retrieve Web Content"
+    },
+    {
+      "parameters": {
+        "content": "## Optional Data Fetching from Web Page\n\n### Pipeline:\nHTTP → HTML Parse → Clean → Extract Info → Append Research\n\n### Usage:\nIf the Notion entry contains a link, the flow scrapes and cleans the page text before research extraction.\nIf no link → uses internal LLM fallback (no web content).\n\n### Output:\nStructured JSON: summary, key_aspects, topics, sources, sentiment",
+        "height": 560,
+        "width": 1184,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        288,
+        400
+      ],
+      "id": "8e4c40ca-1fb9-4229-b072-220ace0e4cfd",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Automate full blog creation from Notion input to published draft\n\nFlow summary:\n1. Trigger on Notion update\n2. Optionally fetch & clean web content\n3. Extract structured research (summary, key aspects, etc.)\n4. Generate outline → write full SEO article\n5. Push finished text back to Notion\n\nCore logic:\nInput → Research → Outline → Writing → Output",
+        "height": 304,
+        "width": 832
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -784,
+        496
+      ],
+      "id": "4e3ee826-23d3-4882-aeba-299719482f23",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.cleaned_text }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "summary",
+              "description": "One concise paragraph summarizing the main findings or content of the given text or page.",
+              "required": true
+            },
+            {
+              "name": "key_aspects",
+              "description": "A short bullet-point list (comma- or newline-separated) of the most relevant aspects, facts, or arguments identified in the text.",
+              "required": true
+            },
+            {
+              "name": "source",
+              "description": "Optional. Extract any mentioned URLs, organizations, or references that could serve as sources."
+            },
+            {
+              "name": "topics",
+              "description": "Optional. A few thematic keywords describing the text’s main subjects.",
+              "required": true
+            },
+            {
+              "name": "sentiment",
+              "description": "Optional. Overall tone (e.g., positive, neutral, negative). Useful if the content involves opinions."
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "You are an expert extraction algorithm.\nOnly extract relevant information from the text.\nIf you do not know the value of an attribute asked to extract, you may omit the attribute's value."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        1232,
+        720
+      ],
+      "id": "76f8cd9f-9dd8-42b6-8cce-d60d20cca679",
+      "name": "Information Extractor"
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.first().json['text-content'] || '';\n\n// basic text cleaning with regex\nlet cleaned = text\n  .replace(/https?:\\/\\/\\S+/gi, '')    // remove links\n  .replace(/\\r?\\n|\\r/g, ' ')          // remove newlines\n  .replace(/\\s+/g, ' ')               // collapse multiple spaces\n  .replace(/[^\\w\\s.,!?;:()'\"-]/g, '') // remove non-standard chars\n  .replace(/\\s([.,!?;:])/g, '$1')     // remove space before punctuation\n  .trim();\n\nreturn [{ json: { cleaned_text: cleaned } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1056,
+        720
+      ],
+      "id": "49b0c0e1-6911-49ae-8861-402094334bd8",
+      "name": "Clean Text"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "600b06d4-8a95-4d58-80b4-769e9a0e47f5",
+              "leftValue": "={{ $json.links }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        832
+      ],
+      "id": "fd1c5c06-f7fd-4e3a-9928-15b75110a0a4",
+      "name": "Has Links"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-nano",
+          "mode": "list",
+          "cachedResultName": "gpt-5-nano"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1312,
+        848
+      ],
+      "id": "b05207d2-9682-4827-8dad-7f1e6a463d13",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "text-content",
+              "cssSelector": "body"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        848,
+        720
+      ],
+      "id": "9fb0b7a5-f3aa-4c30-bb83-d43c2ec64828",
+      "name": "Get Text"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-nano",
+          "mode": "list",
+          "cachedResultName": "GPT-5-NANO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Role: Research assistant.\nContext: No web search. Use only existing model knowledge. If uncertain, return \"unknown\".\n\nTask:\n- Condense the topic into a factual research summary for a professional audience.\n- Do not invent data or sources.\n- Keep it short, precise, and objective.\n\nInputs:\n- Category: {{ $json.Category }}\n- Title: {{ $json.Title }}\n\nOutput format (STRICT JSON):\n{\n  \"summary\": \"<1 short paragraph, 3–5 sentences>\",\n  \"key_aspects\": [\"<bullet point>\", \"<bullet point>\", \"<bullet point>\"],\n  \"sources\": [\"<known standard sources/institutions, else 'unknown'>\"],\n  \"topics\": [\"<2–5 thematic keywords>\"],\n  \"sentiment\": \"<one of: positive | neutral | negative | mixed | unknown>\"\n}\n\nRules:\n- Output JSON only, no explanations or commentary.\n- No links unless verified; otherwise use \"unknown\".\n- Language: English."
+            }
+          ]
+        },
+        "simplify": false,
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        592,
+        1008
+      ],
+      "id": "23fb8a8a-3fc0-4475-b74d-2a69fb864505",
+      "name": "Research Content"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a6e4a256-d5d1-46d8-b575-889466deea11",
+              "name": "summary",
+              "value": "={{ $json.output.summary }}",
+              "type": "string"
+            },
+            {
+              "id": "61ecf3a8-0fb4-41d0-b676-5ae42b37a04d",
+              "name": "key_aspects",
+              "value": "={{ $json.output.key_aspects }}",
+              "type": "string"
+            },
+            {
+              "id": "b7bf0c6f-3a42-4b44-8da6-074b85fd7c04",
+              "name": "sources",
+              "value": "={{ $json.output.sources || [] }}",
+              "type": "string"
+            },
+            {
+              "id": "0ae46028-90bd-4a04-ba5b-fdc2a78b514f",
+              "name": "topics",
+              "value": "={{ $json.output.topics }}",
+              "type": "string"
+            },
+            {
+              "id": "53330380-581b-4f80-9b89-27be10ac36b7",
+              "name": "sentiment",
+              "value": "={{ $json.output.sentiment || \"\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1632,
+        720
+      ],
+      "id": "4244575e-ba40-4966-823a-4d8e01d0f831",
+      "name": "Set Extraction JSON"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a6e4a256-d5d1-46d8-b575-889466deea11",
+              "name": "summary",
+              "value": "={{ $json.choices[0].message.content.summary }}",
+              "type": "string"
+            },
+            {
+              "id": "61ecf3a8-0fb4-41d0-b676-5ae42b37a04d",
+              "name": "key_aspects",
+              "value": "={{ $json.choices[0].message.content.key_aspects }}",
+              "type": "array"
+            },
+            {
+              "id": "b7bf0c6f-3a42-4b44-8da6-074b85fd7c04",
+              "name": "sources",
+              "value": "={{ $json.choices[0].message.content.sources }}",
+              "type": "array"
+            },
+            {
+              "id": "0ae46028-90bd-4a04-ba5b-fdc2a78b514f",
+              "name": "topics",
+              "value": "={{ $json.choices[0].message.content.topics }}",
+              "type": "array"
+            },
+            {
+              "id": "53330380-581b-4f80-9b89-27be10ac36b7",
+              "name": "sentiment",
+              "value": "={{ $json.choices[0].message.content.sentiment }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1696,
+        1008
+      ],
+      "id": "1f366c64-2ea8-4baf-907b-d9e90717d6ea",
+      "name": "Set LLM JSON"
+    },
+    {
+      "parameters": {
+        "content": "## AI Nodes\n\n- **Research Content**: builds factual baseline (LLM fallback)\n- **Outline**: converts research into structured blog plan (SEO-aware)\n- **Writing**: expands outline into full article (Markdown, neutral tone)\n\n**Principle**:\nEach LLM node works on short, self-contained context → minimal token use, predictable outputs.",
+        "height": 288,
+        "width": 464,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        400
+      ],
+      "id": "4a307f29-3a4e-4d4a-9d6b-81a41ec94802",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "07e3bf4d-f961-4978-a7d9-331e9fe8b031",
+              "leftValue": "={{ $('Notion Blog Post Idea Trigger').item.json.Status }}",
+              "rightValue": "Ausarbeitung",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -576,
+        832
+      ],
+      "id": "982d6191-3b6a-43fd-8458-0cd85cebaf7e",
+      "name": "Check Idea Status"
+    },
+    {
+      "parameters": {
+        "resource": "block",
+        "operation": "getAll",
+        "blockId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "returnAll": true,
+        "fetchNestedBlocks": true
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        -368,
+        832
+      ],
+      "id": "64f5b3c2-10cf-4bf4-ab48-0c78221c43e8",
+      "name": "Get Page Content"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2f91fa5a-1ce8-4c53-a5e0-3f0196858bcf",
+              "name": "Kategorie",
+              "value": "={{ $('Notion Blog Post Idea Trigger').item.json.Kategorie }}",
+              "type": "string"
+            },
+            {
+              "id": "d31496f6-5a0b-4d64-89f2-99eadc96f542",
+              "name": "Titel",
+              "value": "={{ $('Notion Blog Post Idea Trigger').item.json.Titel }}",
+              "type": "string"
+            },
+            {
+              "id": "976d9679-26ad-4f21-a5c2-856eba534970",
+              "name": "links",
+              "value": "={{ ( $json.content.match(/\\bhttps?:\\/\\/[^\\s<>\"]+|www\\.[^\\s<>\"]+/gi) || [] ) }}",
+              "type": "array"
+            },
+            {
+              "id": "39d80f79-40a2-4403-9ed4-f56ee22733aa",
+              "name": "",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        64,
+        832
+      ],
+      "id": "502e3f07-809a-4586-9717-ae953c677cd0",
+      "name": "Set Run Data"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('Notion Blog Post Idea Trigger').item.json.id }}",
+          "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Status|select",
+              "selectValue": "Review"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        2992,
+        1040
+      ],
+      "id": "00397996-8f53-495a-a040-ea18b4164467",
+      "name": "Update Blog Post Status"
+    },
+    {
+      "parameters": {
+        "jsCode": "// input: full markdown string\nconst maxLen = 2000;\nconst sections = $input.first().json.message.content.split(/(?=## )/); // split where “## ” starts, preserving headers\nlet chunks = [];\n\nfor (const sec of sections) {\n  if (sec.length <= maxLen) {\n    chunks.push(sec.trim());\n  } else {\n    // split this section into sub-chunks\n    let remaining = sec.trim();\n    while (remaining.length > 0) {\n      let cut = remaining.slice(0, maxLen);\n      // try to find a good break point (e.g., last newline or space) within cut\n      let idx = Math.max(\n        cut.lastIndexOf('\\n'),\n        cut.lastIndexOf(' '),\n        cut.lastIndexOf('.'),\n        -1\n      );\n      if (idx < maxLen * 0.8) {\n        // fallback: break exactly at maxLen\n        idx = maxLen;\n      }\n      let part = remaining.slice(0, idx).trim();\n      chunks.push(part);\n      remaining = remaining.slice(idx).trim();\n    }\n  }\n}\n// output: chunks array\nreturn [{ json: { chunks } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1936,
+        1056
+      ],
+      "id": "242f9d4e-4226-4239-9a01-1798d92a8caa",
+      "name": "Chunk Data"
+    },
+    {
+      "parameters": {
+        "resource": "block",
+        "blockId": {
+          "__rl": true,
+          "value": "={{ $('Get Page Content').item.json.id }}",
+          "mode": "id"
+        },
+        "blockUi": {
+          "blockValues": [
+            {
+              "textContent": "={{ $json.chunks }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        2768,
+        1136
+      ],
+      "id": "e20584b2-aa20-4a18-8e46-191ddc7c1e21",
+      "name": "Append Chunks to DB"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        832
+      ],
+      "id": "dd87e7fb-c6d8-40ee-b93e-7d124614e281",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2416,
+        1056
+      ],
+      "id": "ea3e5bbe-fa10-4b43-bf31-009003dc0bee",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "chunks",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        2144,
+        1056
+      ],
+      "id": "cdb9b3c8-2d61-477d-89cc-8dbb3d2fcce2",
+      "name": "Split Out"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Writing": {
+      "main": [
+        [
+          {
+            "node": "Chunk Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outline": {
+      "main": [
+        [
+          {
+            "node": "Writing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve Web Content": {
+      "main": [
+        [
+          {
+            "node": "Get Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor": {
+      "main": [
+        [
+          {
+            "node": "Set Extraction JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Text": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Links": {
+      "main": [
+        [
+          {
+            "node": "Retrieve Web Content",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Research Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Text": {
+      "main": [
+        [
+          {
+            "node": "Clean Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Content": {
+      "main": [
+        [
+          {
+            "node": "Set LLM JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Extraction JSON": {
+      "main": [
+        [
+          {
+            "node": "Outline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set LLM JSON": {
+      "main": [
+        [
+          {
+            "node": "Outline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion Blog Post Idea Trigger": {
+      "main": [
+        [
+          {
+            "node": "Check Idea Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Idea Status": {
+      "main": [
+        [
+          {
+            "node": "Get Page Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Page Content": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Run Data": {
+      "main": [
+        [
+          {
+            "node": "Has Links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chunk Data": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append Chunks to DB": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Set Run Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Update Blog Post Status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append Chunks to DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b20d9071-23a6-4758-9cbe-9537df4a94ab",
+  "meta": {
+    "instanceId": "f2e4cbf3194843e52dc6d54b02774a25bc3480f66c7f04c30409e16115b3fe89"
+  },
+  "id": "leKTv64MhhcY3j2v",
+  "tags": []
+}

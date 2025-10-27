@@ -16,9 +16,10 @@ Reusable workflows for [n8n](https://n8n.io) — practical automations for text 
 ## Structure
 - `workflows/` → n8n exports
 - `docs/` → short guides & diagrams
-- `scripts/` → helper utilities
 - `assets/` → previews & screenshots
 
+## Hosting
+Use Coolify to run the stack (n8n, NocoDB, DB) on a single VPS with TLS and Git-based deploys.
 
 ## Contribute
 Add flow under `/workflows` and a one-line entry in `/docs/overview.md`.
