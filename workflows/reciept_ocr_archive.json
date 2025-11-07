@@ -18,13 +18,7 @@
       ],
       "id": "8ead0832-00fd-4001-a5b0-ebb6db67b572",
       "name": "Telegram Trigger",
-      "webhookId": "e10ad9a0-59da-4a62-9ccb-0b9331bf0104",
-      "credentials": {
-        "telegramApi": {
-          "id": "h7G4cLj9pTMKsZcV",
-          "name": "Telegram account 2"
-        }
-      }
+      "webhookId": "e10ad9a0-59da-4a62-9ccb-0b9331bf0104"
     },
     {
       "parameters": {
@@ -38,13 +32,7 @@
         -608
       ],
       "id": "2f5ff870-e0d7-4fa6-b25f-2b6731700b43",
-      "name": "Upload a file",
-      "credentials": {
-        "googlePalmApi": {
-          "id": "wbG4g0hFcZb3IvvM",
-          "name": "Google Gemini(PaLM) Api account"
-        }
-      }
+      "name": "Upload a file"
     },
     {
       "parameters": {
@@ -76,13 +64,7 @@
       ],
       "id": "f31619fe-b318-4ac4-93fb-f46296e84e59",
       "name": "Send Confirmation",
-      "webhookId": "f8a9385a-2a3a-4870-86f8-a0796f9d29e2",
-      "credentials": {
-        "telegramApi": {
-          "id": "h7G4cLj9pTMKsZcV",
-          "name": "Telegram account 2"
-        }
-      }
+      "webhookId": "f8a9385a-2a3a-4870-86f8-a0796f9d29e2"
     },
     {
       "parameters": {
@@ -138,13 +120,7 @@
         -272
       ],
       "id": "503ce3b1-fbfe-4f8c-a42e-a2269dec0299",
-      "name": "Write to DB",
-      "credentials": {
-        "nocoDbApiToken": {
-          "id": "vwwY5pBBrhmp8Y2k",
-          "name": "NocoDB Token account"
-        }
-      }
+      "name": "Write to DB"
     },
     {
       "parameters": {
@@ -152,9 +128,9 @@
         "operation": "analyze",
         "modelId": {
           "__rl": true,
-          "value": "models/gemini-2.5-flash",
+          "value": "{{LLM_MODEL_ID}}",
           "mode": "list",
-          "cachedResultName": "models/gemini-2.5-flash"
+          "cachedResultName": "LLM_MODEL"
         },
         "text": "You are given the full raw text extracted via OCR from a grocery store receipt.  \nPlease parse and extract the following fields in JSON exactly as shown:\n\n{\n  \"store_name\": string or null,\n  \"date\": ISO-8601 date string (YYYY-MM-DD) or null,\n  \"time\": 24h-format (HH:MM) or null,\n  \"receipt_number\": string or null,\n  \"items\": [\n    {\n      \"name\": string,\n      \"quantity\": integer or null,\n      \"unit_price\": number or null,\n      \"total_price\": number or null\n    },\n    … \n  ],\n  \"subtotal\": number or null,\n  \"tax\": number or null,\n  \"total\": number or null,\n  \"currency\": string (e.g., \"EUR\", \"USD\") or null\n}\n\nIf any field cannot be confidently extracted, set it to null and add an additional field `\"uncertain_fields\": [ list of field names ]`.\n\nOnly output valid JSON (no extra explanation).  \nEnsure numeric fields use dot as decimal separator.  \nUse best effort to match items to their prices.",
         "imageUrls": "={{ $json.fileUri }}",
@@ -167,13 +143,7 @@
         -608
       ],
       "id": "055b3074-578f-40df-9b19-2c0476543fc6",
-      "name": "OCR",
-      "credentials": {
-        "googlePalmApi": {
-          "id": "wbG4g0hFcZb3IvvM",
-          "name": "Google Gemini(PaLM) Api account"
-        }
-      }
+      "name": "OCR"
     },
     {
       "parameters": {
@@ -295,12 +265,6 @@
       "id": "04bfcb68-5500-4179-ad7d-4a80435f811f",
       "name": "Check If Exists",
       "alwaysOutputData": true,
-      "credentials": {
-        "nocoDbApiToken": {
-          "id": "vwwY5pBBrhmp8Y2k",
-          "name": "NocoDB Token account"
-        }
-      },
       "onError": "continueRegularOutput"
     },
     {
@@ -556,7 +520,7 @@
   "versionId": "cb955131-3e8f-40cd-8ddc-ba84d8ecc842",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "f2e4cbf3194843e52dc6d54b02774a25bc3480f66c7f04c30409e16115b3fe89"
+    "instanceId": "{{N8N_INSTANCE_ID}}"
   },
   "id": "WzAG6FJhzfygIRqN",
   "tags": []

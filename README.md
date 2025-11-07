@@ -7,6 +7,17 @@ Reusable workflows for [n8n](https://n8n.io) — practical automations for text 
 - Generate blog-ready content with optional web research and formatting automation.
 - more to come ..
 
+## Sanitize Workflows
+
+Before publishing, anonymize all `.json` files in `/workflows` (removes credentials, Notion IDs, model IDs, instance IDs).
+
+Using Make:
+- Overwrite in place: `make anon`
+- Optional to another folder: `make anon-out OUT=out_workflows`
+- Verify no credentials remain: `make check-anon`
+
+Direct Python:
+`python3 scripts/anonymize_n8n.py workflows workflows --recursive`
 
 ## Use
 1. Clone repo → `git clone https://github.com/yourname/n8n-flows-collection.git`

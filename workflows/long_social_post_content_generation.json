@@ -1,0 +1,1512 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "{{LLM_MODEL_ID}}",
+          "mode": "list",
+          "cachedResultName": "LLM_MODEL"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a professional content writer specialized in producing concise, fact-based articles for expert audiences.Write a **short, fluent, and journalistic-style blog article** based on the following inputs.**Context:** Industry-related website**Target audience:** Professionals, investors, or decision-makers**Tone:** Neutral, factual, and informative**Domain reference:** Adapt terminology and examples to the given topic**Inputs:*** **Guidelines:** `{{ $('Set Run Data').item.json.guidelines }}`* **Content Cues:** `{{ $('Set Run Data').item.json['Content Cues'] }}`* **Outline:** `{{ $json.message.content }}`---### **Task**Create a well-structured blog article that:1. Follows the provided outline (keep or adapt H1/H2 titles logically).2. Strictly adheres to the tone, target audience, and style guidelines.3. Integrates relevant data, terminology, and context-specific insights concisely.---### **Requirements**1. **Title (H1):** Use or slightly adapt from the outline.2. **Introduction (50–90 words):** Briefly contextualize the topic and highlight its relevance for the audience.3. **Main Section:*** Retain H2 headings from the outline.* Keep paragraphs short (2–4 sentences).* Explain only key terms or concepts where needed.* Mention current trends or figures only if verifiable.4. **Conclusion (H2):** Provide a neutral, concise summary with clear takeaways.---### **Formatting*** Output **Markdown only**.* Correct heading hierarchy (H1 → H2 → H3 if needed).* Clear, precise language; avoid filler or promotional tone.* No fabricated data, sources, or quotations.* **Output only the finished article – no comments or meta notes.**---### **Length & Style*** Target length: **600–900 words**.* Compact, analytical, SEO-friendly.* Optional subtle closing reference, e.g.:> *“Our team supports clients with data-driven insights and strategic guidance for informed investment decisions.”*"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        3312,
+        416
+      ],
+      "id": "4d6e558f-d154-49a4-8b71-c581358d5cd6",
+      "name": "Writing"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "{{LLM_MODEL_ID}}",
+          "mode": "list",
+          "cachedResultName": "LLM_MODEL"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an experienced professional content strategist.Create a **clear, concise, and SEO-optimized blog outline** based on the following inputs.**Context:** Industry-related website**Target audience:** Professionals, investors, or decision-makers**Tone:** Neutral, factual, and informative**Domain reference:** Adapt language and structure to the specific topic**Inputs:*** Category: {{ $('Notion Blog Post Idea Trigger').item.json.Category }}* Title: {{ $('Notion Blog Post Idea Trigger').item.json.Title }}* Summary: {{ $json.summary }}* Key_Aspects: {{ $json.key_aspects }}* Topics: {{ $json.topics }}* Sources: {{ $json.sources }}**Additional inputs:*** **Guidelines:** `{{ $('Set Run Data').item.json.guidelines }}`* **Content Cues:** `{{ $('Set Run Data').item.json['Content Cues'] }}`* **Length:** Short, precise, focused — no redundancy or filler text.---### **Task**Develop a **compact, logically structured outline** for a blog article (approx. 3–5 main sections) that is coherent, relevant, and SEO-friendly.---### **Requirements*** Language: English (or adapt to target market language).* Use clear H2 headings that naturally include relevant keywords from the title, category, and topics.* For each section, write a **short description (1–3 sentences)** summarizing its key point.* Cover, where appropriate:• Overview or context• Current situation or trends• Relevant perspectives or debates• Short conclusion or outlook* Use a **continuous, compact text format** – no bullet lists.---### **SEO Guidance**Incorporate keywords naturally in headings and section summaries. Avoid keyword stuffing or artificial phrasing.---### **Goal**Produce a **short, coherent, SEO-oriented outline** that serves as a solid foundation for a focused, well-structured blog article."
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        2944,
+        416
+      ],
+      "id": "4260e073-f655-4504-8041-de83eb4c22da",
+      "name": "Outline"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.links[0] }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "{{GENERIC_UA}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1632,
+        320
+      ],
+      "id": "722b73e8-1920-474a-8db1-5974bb9702fc",
+      "name": "Retrieve Web Content"
+    },
+    {
+      "parameters": {
+        "content": "## Optional Data Fetching from Web Page\n\n### Pipeline:\nHTTP → HTML Parse → Clean → Extract Info → Append Research\n\n### Usage:\nIf the Notion entry contains a link, the flow scrapes and cleans the page text before research extraction.\nIf no link → uses internal LLM fallback (no web content).\n\n### Output:\nStructured JSON: summary, key_aspects, topics, sources, sentiment",
+        "height": 560,
+        "width": 1296,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        16
+      ],
+      "id": "31d94e89-5e82-427a-b585-4fb03abdc7f7",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Automate full blog creation from Notion input to published draft\n\nFlow summary:\n1. Trigger on Notion update\n2. Optionally fetch & clean web content\n3. Extract structured research (summary, key aspects, etc.)\n4. Generate outline → write full SEO article\n5. Push finished text back to Notion\n\nCore logic:\nInput → Research → Outline → Writing → Output\n\nNotion Page: XXXXX",
+        "height": 400,
+        "width": 528
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1728,
+        256
+      ],
+      "id": "0a889259-b095-4a54-af4b-b8137ddd2fba",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.cleaned_text }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "summary",
+              "description": "One concise paragraph summarizing the main findings or content of the given text or page.",
+              "required": true
+            },
+            {
+              "name": "key_aspects",
+              "description": "A short bullet-point list (comma- or newline-separated) of the most relevant aspects, facts, or arguments identified in the text.",
+              "required": true
+            },
+            {
+              "name": "source",
+              "description": "Optional. Extract any mentioned URLs, organizations, or references that could serve as sources."
+            },
+            {
+              "name": "topics",
+              "description": "Optional. A few thematic keywords describing the text's main subjects.",
+              "required": true
+            },
+            {
+              "name": "sentiment",
+              "description": "Optional. Overall tone (e.g., positive, neutral, negative). Useful if the content involves opinions."
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "You are an expert extraction algorithm.\nOnly extract relevant information from the text.\nIf you do not know the value of an attribute asked to extract, you may omit the attribute's value."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        2224,
+        320
+      ],
+      "id": "d71ea66b-e849-4c17-901b-bc6143323f34",
+      "name": "Information Extractor"
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.first().json['text-content'] || '';\n\n// basic text cleaning with regex\nlet cleaned = text\n  .replace(/https?:\\/\\/\\S+/gi, '')    // remove links\n  .replace(/\\r?\\n|\\r/g, ' ')          // remove newlines\n  .replace(/\\s+/g, ' ')               // collapse multiple spaces\n  .replace(/[^\\w\\s.,!?;:()'\"-]/g, '') // remove non-standard chars\n  .replace(/\\s([.,!?;:])/g, '$1')     // remove space before punctuation\n  .trim();\n\nreturn [{ json: { cleaned_text: cleaned } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2048,
+        320
+      ],
+      "id": "9f67388c-fffa-436e-873c-d896f984a8b8",
+      "name": "Clean Text"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "600b06d4-8a95-4d58-80b4-769e9a0e47f5",
+              "leftValue": "={{ $json.links }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1152,
+        480
+      ],
+      "id": "917ab9ff-1ac1-42cf-9393-42ae8b586939",
+      "name": "Has Links"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "{{LLM_MODEL_ID}}",
+          "mode": "list",
+          "cachedResultName": "LLM_MODEL"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2304,
+        448
+      ],
+      "id": "a57fe3aa-47a8-4dd8-bd67-f574184fd204",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "text-content",
+              "cssSelector": "body"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1840,
+        320
+      ],
+      "id": "0da3756e-a7e0-46ab-951a-337117edc637",
+      "name": "Get Text"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "{{LLM_MODEL_ID}}",
+          "mode": "list",
+          "cachedResultName": "LLM_MODEL"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Role: Research assistant specialized in professional industry analysis.Context: No web search. Use only existing model knowledge. If uncertain, return \"unknown\".**Task:**- Condense the topic into a neutral, factual research extract for professionals or investors.- Do not invent data, numbers, or sources.- Keep it short, precise, and objective.**Inputs:**- Category: {{ $json.Category }}- Title: {{ $json.Title }}**Output format (STRICT JSON):**{\"summary\": \"<one short paragraph, 3-5 sentences>\",\"key_aspects\": [\"<bullet point>\", \"<bullet point>\", \"<bullet point>\"],\"sources\": [\"<known standard sources/institutions, otherwise 'unknown'>\"],\"topics\": [\"<2-5 thematic keywords>\"],\"sentiment\": \"<one of: positive | neutral | negative | mixed | unknown>\"}**Rules:**- Output JSON only, no explanations.- No links unless verified → \"unknown\".- Language: English."
+            }
+          ]
+        },
+        "simplify": false,
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1584,
+        704
+      ],
+      "id": "79fbf1f3-8353-4aca-95c3-3346e7265596",
+      "name": "Research Content"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a6e4a256-d5d1-46d8-b575-889466deea11",
+              "name": "summary",
+              "value": "={{ $json.output.summary }}",
+              "type": "string"
+            },
+            {
+              "id": "61ecf3a8-0fb4-41d0-b676-5ae42b37a04d",
+              "name": "key_aspects",
+              "value": "={{ $json.output.key_aspects }}",
+              "type": "string"
+            },
+            {
+              "id": "b7bf0c6f-3a42-4b44-8da6-074b85fd7c04",
+              "name": "sources",
+              "value": "={{ $json.output.sources || [] }}",
+              "type": "string"
+            },
+            {
+              "id": "0ae46028-90bd-4a04-ba5b-fdc2a78b514f",
+              "name": "topics",
+              "value": "={{ $json.output.topics }}",
+              "type": "string"
+            },
+            {
+              "id": "53330380-581b-4f80-9b89-27be10ac36b7",
+              "name": "sentiment",
+              "value": "={{ $json.output.sentiment || \"\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2624,
+        320
+      ],
+      "id": "ddeeab2b-4622-4512-9e0d-7d54c6394d05",
+      "name": "Set Extraction JSON"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a6e4a256-d5d1-46d8-b575-889466deea11",
+              "name": "summary",
+              "value": "={{ $json.choices[0].message.content.summary }}",
+              "type": "string"
+            },
+            {
+              "id": "61ecf3a8-0fb4-41d0-b676-5ae42b37a04d",
+              "name": "key_aspects",
+              "value": "={{ $json.choices[0].message.content.key_aspects }}",
+              "type": "array"
+            },
+            {
+              "id": "b7bf0c6f-3a42-4b44-8da6-074b85fd7c04",
+              "name": "sources",
+              "value": "={{ $json.choices[0].message.content.sources }}",
+              "type": "array"
+            },
+            {
+              "id": "0ae46028-90bd-4a04-ba5b-fdc2a78b514f",
+              "name": "topics",
+              "value": "={{ $json.choices[0].message.content.topics }}",
+              "type": "array"
+            },
+            {
+              "id": "53330380-581b-4f80-9b89-27be10ac36b7",
+              "name": "sentiment",
+              "value": "={{ $json.choices[0].message.content.sentiment }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2624,
+        704
+      ],
+      "id": "b359ee4e-e7e8-478e-ac5a-ce101e4173c6",
+      "name": "Set LLM JSON"
+    },
+    {
+      "parameters": {
+        "content": "## AI Nodes\n\n- **Outline**: converts research into structured blog plan (SEO-aware)\n- **Writing**: expands outline into full article (Markdown, neutral tone)\n\n**Principle**:\nEach LLM node works on short, self-contained context → minimal token use, predictable outputs.",
+        "height": 384,
+        "width": 640,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2928,
+        160
+      ],
+      "id": "40493413-4a64-451b-b0a5-72e92b5416b9",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "1) Retrieve general information from the Blog Database page (framework, target audience, etc.) \n  2) Parse data and content from the Blog Idea page",
+        "height": 464,
+        "width": 704
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -896,
+        320
+      ],
+      "id": "9e1897dc-a889-47f4-8263-8af9387f3ee7",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "event": "pagedUpdatedInDatabase",
+        "databaseId": {
+          "__rl": true,
+          "value": "{{NOTION_DATABASE_ID}}",
+          "mode": "list",
+          "cachedResultName": "",
+          "cachedResultUrl": ""
+        }
+      },
+      "type": "n8n-nodes-base.notionTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1632,
+        752
+      ],
+      "id": "c02babec-9b94-4a89-aaf6-b13d95ec3da6",
+      "name": "Notion Blog Post Idea Trigger"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "07e3bf4d-f961-4978-a7d9-331e9fe8b031",
+              "leftValue": "={{ $('Notion Blog Post Idea Trigger').item.json.Status }}",
+              "rightValue": "Ausarbeitung",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -1360,
+        752
+      ],
+      "id": "e3af62d4-f991-4e53-bf98-b5a2db0e5b69",
+      "name": "Check Idea Status"
+    },
+    {
+      "parameters": {
+        "resource": "block",
+        "operation": "getAll",
+        "blockId": {
+          "__rl": true,
+          "value": "{{NOTION_BLOCK_ID}}",
+          "mode": "id"
+        },
+        "returnAll": true,
+        "fetchNestedBlocks": true
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        -864,
+        416
+      ],
+      "id": "b82ab504-e963-40b1-8cd1-f79611769924",
+      "name": "Get Page Content",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2f91fa5a-1ce8-4c53-a5e0-3f0196858bcf",
+              "name": "Kategorie",
+              "value": "={{ $('Notion Blog Post Idea Trigger').item.json.Kategorie }}",
+              "type": "string"
+            },
+            {
+              "id": "d31496f6-5a0b-4d64-89f2-99eadc96f542",
+              "name": "Titel",
+              "value": "={{ $('Notion Blog Post Idea Trigger').item.json.Titel }}",
+              "type": "string"
+            },
+            {
+              "id": "976d9679-26ad-4f21-a5c2-856eba534970",
+              "name": "links",
+              "value": "={{ $json['Content Links'] }}",
+              "type": "array"
+            },
+            {
+              "id": "1ba1deb3-b468-4b87-9ccb-cc6332c1cfa4",
+              "name": "guidelines",
+              "value": "={{ $json.guidelines }}",
+              "type": "object"
+            },
+            {
+              "id": "fb2d7ded-68df-4060-95c4-a85e5d4cf64a",
+              "name": "imagePlaceholderBlockIds",
+              "value": "={{ $json.imagePlaceholderBlockIds }}",
+              "type": "object"
+            },
+            {
+              "id": "a3a4faec-ca90-4023-b094-df795b00689f",
+              "name": "photos",
+              "value": "={{ $json.photos }}",
+              "type": "array"
+            },
+            {
+              "id": "b6809010-96c6-435c-926b-d88ab31ea8d6",
+              "name": "automatedBlogStartBlockId",
+              "value": "={{ $json.automatedBlogStartBlockId }}",
+              "type": "string"
+            },
+            {
+              "id": "78e041fa-501a-4745-8b97-4a0763701607",
+              "name": "Content Cues",
+              "value": "={{ $json['Content Cues'] }}",
+              "type": "string"
+            },
+            {
+              "id": "707969cb-2206-4b80-9748-513d92f4fb1a",
+              "name": "page_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {
+          "ignoreConversionErrors": true
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        688,
+        640
+      ],
+      "id": "bdf6855f-20ad-4f06-b42f-307aecaac7da",
+      "name": "Set Run Data"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('Notion Blog Post Idea Trigger').item.json.id }}",
+          "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Status|select",
+              "selectValue": "Review"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        5088,
+        160
+      ],
+      "id": "972d713a-6962-4774-8f4e-52e5a2765c35",
+      "name": "Update Blog Post Status"
+    },
+    {
+      "parameters": {
+        "jsCode": "// input: full markdown string\nconst maxLen = 2000;\nconst sections = $input.first().json.message.content.split(/(?=## )/); // split where “## ” starts, preserving headers\nlet chunks = [];\n\nfor (const sec of sections) {\n  if (sec.length <= maxLen) {\n    chunks.push(sec.trim());\n  } else {\n    // split this section into sub-chunks\n    let remaining = sec.trim();\n    while (remaining.length > 0) {\n      let cut = remaining.slice(0, maxLen);\n      // try to find a good break point (e.g., last newline or space) within cut\n      let idx = Math.max(\n        cut.lastIndexOf('\\n'),\n        cut.lastIndexOf(' '),\n        cut.lastIndexOf('.'),\n        -1\n      );\n      if (idx < maxLen * 0.8) {\n        // fallback: break exactly at maxLen\n        idx = maxLen;\n      }\n      let part = remaining.slice(0, idx).trim();\n      chunks.push(part);\n      remaining = remaining.slice(idx).trim();\n    }\n  }\n}\n// output: chunks array\nreturn [{ json: { chunks } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2928,
+        656
+      ],
+      "id": "782617cb-6f00-4f32-b5aa-20efebfe13e6",
+      "name": "Chunk Data"
+    },
+    {
+      "parameters": {
+        "resource": "block",
+        "blockId": {
+          "__rl": true,
+          "value": "{{NOTION_BLOCK_ID}}",
+          "mode": "id"
+        },
+        "blockUi": {
+          "blockValues": [
+            {
+              "textContent": "={{ $json.chunks }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        3824,
+        816
+      ],
+      "id": "bc32b729-5bb4-43d6-8af0-8870b8e997d4",
+      "name": "Append Chunks to DB"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        3552,
+        656
+      ],
+      "id": "f6730a11-2095-4f67-a453-36268b329165",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "chunks",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        3136,
+        656
+      ],
+      "id": "7951819b-ec7c-4759-9ccd-17b1645e7bd0",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "jsCode": "// merge all input items into one array\nconst merged = $input.all().map(item => item.json);\n\n// output a single item containing the merged list\nreturn [\n  {\n    json: {\n      blocks: merged\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -624,
+        416
+      ],
+      "id": "90366eb4-c069-43c4-8c22-3210cd8eb98e",
+      "name": "Merge all Blocks"
+    },
+    {
+      "parameters": {
+        "jsCode": "// input: single merged item with json.blocks\n// output: compact structure with `context` and `guidelines`\n\nconst blocks = Array.isArray($json) ? $json : ($json.blocks ?? []);\nif (!Array.isArray(blocks) || !blocks.length) {\n  return [{ json: { error: 'no blocks found', raw: $json } }];\n}\n\nconst norm = (s) => String(s ?? '')\n  .replace(/\\s+/g, ' ')\n  .replace(/^[\\s–—\\-*•]+/, '')\n  .trim();\n\nconst stripEmoji = (s) => norm(s).replace(/^[\\p{Emoji_Presentation}\\p{Extended_Pictographic}\\p{Emoji}\\s]+/gu, '').trim();\n\nconst childrenByParent = blocks.reduce((acc, b) => {\n  if (!b.parent_id) return acc;\n  (acc[b.parent_id] ??= []).push(b);\n  return acc;\n}, {});\n\nconst paragraphs = blocks.filter(b => b.type === 'paragraph').map(b => norm(b.content));\nconst intro = paragraphs.find(p => p && !/^content kann entweder/i.test(p)) || '';\n\nconst bullets = blocks\n  .filter(b => b.type === 'bulleted_list_item')\n  .map(b => norm(b.content))\n  .filter(Boolean);\n\nconst toggleBlocks = blocks.filter(b => b.type === 'toggle');\nconst toggleObj = {};\nfor (const t of toggleBlocks) {\n  const title = stripEmoji(t.content);\n  const key = title\n    .toLowerCase()\n    .replace(/\\s*\\/\\s*/g, ' / ')\n    .replace(/[^\\p{Letter}\\p{Number}\\/\\s-]+/gu, '')\n    .replace(/\\s+/g, ' ')\n    .trim();\n\n  const kids = childrenByParent[t.id] ?? [];\n  const kidBullets = kids.filter(k => k.type === 'bulleted_list_item').map(k => norm(k.content));\n  const kidParas = kids.filter(k => k.type === 'paragraph').map(k => norm(k.content)).filter(Boolean);\n\n  toggleObj[key] = kidBullets.length ? kidBullets : (kidParas.join('\\n') || '');\n}\n\n// alles unter `guidelines` zusammenfassen\nconst guidelines = {\n  zielgruppe: toggleObj['zielgruppe'] ?? '',\n  'tonality / sprachstil': toggleObj['tonality / sprachstil'] ?? toggleObj['sprachstil'] ?? '',\n  'beispielformulierungen / wording-bausteine':\n    toggleObj['beispielformulierungen / wording-bausteine'] ?? toggleObj['beispielformulierungen'] ?? '',\n  'vermeide (nicht-corporate)': toggleObj['vermeide (nicht-corporate)'] ?? toggleObj['vermeide'] ?? '',\n};\n\nreturn [{\n  json: {\n    context: {\n      intro,\n      content_types: bullets,\n    },\n    guidelines,\n    meta: {\n      toggles_seen: Object.keys(toggleObj),\n      bullets_count: bullets.length,\n    }\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        592
+      ],
+      "id": "9d16c1ec-82fc-4cba-a6f5-073b31ce91de",
+      "name": "Strucuture Block Framing & Context"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 4,
+        "options": {
+          "includeUnpaired": true
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        400,
+        704
+      ],
+      "id": "771183e2-c79d-4037-ae94-8c823797d37a",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ziel: alle 65 eingangs-items zu einem item mit json.blocks mergen\n// grund: der parser erwartet ein einziges array\n\nconst out = [];\nconst seen = new Set();\n\nconst pushBlock = (b) => {\n  if (!b || typeof b !== 'object') return;\n  const id = b.id ?? JSON.stringify(b);\n  if (seen.has(id)) return;          // vermeidet doppelte\n  seen.add(id);\n  out.push(b);\n};\n\nfor (const item of items) {\n  const j = item.json;\n\n  if (Array.isArray(j?.blocks)) {\n    j.blocks.forEach(pushBlock);\n    continue;\n  }\n  if (Array.isArray(j?.results)) {   // notion api: results\n    j.results.forEach(pushBlock);\n    continue;\n  }\n  if (Array.isArray(j)) {            // direktes array\n    j.forEach(pushBlock);\n    continue;\n  }\n  if (j?.object === 'block' || j?.type) {\n    pushBlock(j);                    // einzelner block\n    continue;\n  }\n  // fallback: nichts erkannt → ignorieren bewusst\n}\n\nreturn [{ json: { blocks: out, count: out.length } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -624,
+        592
+      ],
+      "id": "7f1e06e0-38c1-4fa1-8f26-35fd10914a89",
+      "name": "Merge Guideline Blocks"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "{{LLM_MODEL_ID}}",
+          "mode": "list",
+          "cachedResultName": "LLM_MODEL"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=**Prompt:**\n\nGenerate two English keywords for image search on Pexels based on the following blog post title.\n\n* The first keyword should be **broad** (e.g., *Nature*, *People*, *City*).\n* The second keyword should be **specific**, describing the exact visual scene (e.g., *Group of people working*, *Modern apartment interior*).\n\n**Title:** `{{ $json.Titel }}`\n\n**Output (JSON only):**\n\n```json\n{\n    \"broad\": \"…\",\n  \"specific\": \"…\"\n}\n```"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -1120,
+        960
+      ],
+      "id": "fcf85d23-04bb-456a-a490-7c8cd83452b9",
+      "name": "Generate Pexels Keywords"
+    },
+    {
+      "parameters": {
+        "url": "https://api.pexels.com/v1/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{ $json.message.content.specific }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -688,
+        1040
+      ],
+      "id": "a6201942-e754-49f4-aa7d-27a2fd0e0037",
+      "name": "Query Specific Pexels Images"
+    },
+    {
+      "parameters": {
+        "url": "https://api.pexels.com/v1/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{ $json.message.content.broad }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -688,
+        848
+      ],
+      "id": "8731f7e4-75c6-4215-909a-fd34ad6f04e3",
+      "name": "Query Broad Pexels Images"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -48,
+        864
+      ],
+      "id": "de9b0723-ce1a-478c-b1ee-f0eb7d0b6e15",
+      "name": "Merge Image Results"
+    },
+    {
+      "parameters": {
+        "resource": "block",
+        "operation": "getAll",
+        "blockId": {
+          "__rl": true,
+          "value": "{{NOTION_BLOCK_ID}}",
+          "mode": "id"
+        },
+        "returnAll": true,
+        "fetchNestedBlocks": true
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        -864,
+        592
+      ],
+      "id": "bd2020bb-4e2b-4ba7-b496-522aaa830d55",
+      "name": "Get Blog Planning Context",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// this will hold the final, transformed items\nconst outputItems = [];\n\n/**\n * A helper function to validate if a string is a basic URL.\n * This checks for http:// or https:// prefixes.\n * @param {string} text - The text to check.\n * @returns {boolean} - True if it's a valid URL, false otherwise.\n */\nconst isUrl = (text) => {\n  if (typeof text !== 'string' || !text) {\n    return false;\n  }\n  // a reasonably strict regex to validate a URL.\n  // it requires http/https, a domain, and allows for paths/queries.\n  const urlRegex = /^https?:\\/\\/[^\\s/$.?#].[^\\s]*$/i;\n  return urlRegex.test(text);\n}\n\n// n8n provides the input items in the `items` variable\nfor (const item of items) {\n  // we expect the blocks to be in `item.json.blocks`\n  const blocks = item.json.blocks || [];\n  \n  const groupedContent = {};\n  let currentHeadline = null;\n  // variable to store the id of the block where the blog post will be inserted\n  let automatedBlogStartBlockId = null;\n  // new object to store image placeholder block IDs\n  const imagePlaceholderBlockIds = {};\n  // flag to track if we are in the image suggestion section\n  let isImageSuggestionSection = false;\n\n  // --- 1. Grouping Pass ---\n  // iterate through all blocks to group content under its preceding headline\n  for (const block of blocks) {\n    if (block.type === 'heading_2') {\n      currentHeadline = block.content;\n      groupedContent[currentHeadline] = []; // always initialize\n\n      // check for special headlines and set flags\n      if (currentHeadline === \"Blog Draft (automatisiert)\") {\n        automatedBlogStartBlockId = block.parent_id;\n        isImageSuggestionSection = false; // reset flag\n      } else if (currentHeadline === \"Header Bilder Vorschläge (automatisch)\") {\n        isImageSuggestionSection = true; // set flag\n      } else {\n        isImageSuggestionSection = false; // reset flag for any other headline\n      }\n\n    } else if (currentHeadline) {\n      \n      // Handle image placeholder section\n      if (isImageSuggestionSection) {\n        // e.g., \"Bild 1:\" -> key \"Bild 1\"\n        // const key = block.content.split(':')[0].trim();\n        // if (key) {\n        //   imagePlaceholderBlockIds[key] = block.id;\n        // }\n        imagePlaceholderBlockIds[\"parent\"] = block.id;\n        // we do not add this content to groupedContent,\n        // as we only care about the ID.\n      } \n      // Handle normal content\n      else {\n        groupedContent[currentHeadline].push(block.content);\n      }\n    }\n  }\n\n  // --- 2. Processing Pass ---\n  // create the final object that will be in the output\n  const finalResult = {};\n\n  // iterate over the grouped object (e.g., \"Content Cues\", \"Content Links\")\n  // and apply the special rules.\n  for (const headline in groupedContent) {\n    // skip special headlines from content merging\n    if (headline === \"Blog Draft (automatisiert)\" || headline === \"Header Bilder Vorschläge (automatisch)\") {\n      continue;\n    }\n\n    const contents = groupedContent[headline]; // this is an array of strings\n\n    if (headline === \"Content Links\") {\n      // special rule: validate links and store in an array\n      const links = contents.filter(content => isUrl(content));\n      finalResult[headline] = links; // will be [] if no valid links\n    } else {\n      // default rule: join all content blocks with a newline\n      finalResult[headline] = contents.join('\\n'); // will be \"\" if no content\n    }\n  }\n\n  // add the captured special data to the final output object\n  finalResult.automatedBlogStartBlockId = automatedBlogStartBlockId;\n  finalResult.imagePlaceholderBlockIds = imagePlaceholderBlockIds; // add new object\n\n  // add the processed object to the n8n output array\n  outputItems.push({\n    json: finalResult,\n    // you can uncomment this if you need to pair data with the original item\n    // pairedItem: {\n    //   item: item.Index,\n    // },\n  });\n}\n\n// return the new array of items to the next node\nreturn outputItems;\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        416
+      ],
+      "id": "4b4139b4-bb0b-4f4d-85d7-4c5025e5ea6e",
+      "name": "Parse Notion Content"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f984ea38-3110-4761-ae9f-301f200d8f87",
+              "name": "photos",
+              "value": "={{ $json.photos.slice(0,2) }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -352,
+        848
+      ],
+      "id": "d9d704e1-a6b0-4ec0-b08d-9fc0f3e172eb",
+      "name": "Limit Broad Images"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "282a7ba9-23ca-4df6-993f-e1861552a130",
+              "name": "photos",
+              "value": "={{ $json.photos.slice(0,2) }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -352,
+        1040
+      ],
+      "id": "6f97d155-5b2b-4c27-8121-44193b1cd633",
+      "name": "Limit Specific Images"
+    },
+    {
+      "parameters": {
+        "jsCode": "// merge all input photos arrays into one\nconst merged = $input.all()\n  .flatMap(item => item.json.photos || []); // flatten and ignore missing arrays\n\n// output a single item containing the merged list\nreturn [{\n  json: { photos: merged }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        864
+      ],
+      "id": "0e9372db-4aca-47a2-b99b-d4055b7e976d",
+      "name": "Flatten Photos"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        4448,
+        384
+      ],
+      "id": "74889081-615f-420e-b044-bdc0cfb0dcb2",
+      "name": "Loop Over Photos"
+    },
+    {
+      "parameters": {
+        "content": "## AI Nodes\n\n- **Research Content**: builds factual baseline (LLM fallback)\n",
+        "height": 256,
+        "width": 640,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        592
+      ],
+      "id": "29618f2b-ce0f-4fbc-b78d-601874d2550c",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nBasierend auf dem Ttiel werden 2 Varianten von Keywords extrahiert: Generelle & Spezifische. Für Beide werden die Top 2 genommen & dann in eine Liste gemerged.",
+        "height": 464,
+        "width": 1472
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1168,
+        816
+      ],
+      "id": "628adbb0-54a2-4194-b5ba-8285c2a8a6dc",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "\n\n\n\n\n\n\n\n\n\n\n\n\n\nMan kann maximal einen Text der Länge 2000char auf einmal hinzufügen \n(über die N8N Node), also Chunken wir hier & fügen dann Chunk für Chunk ein.",
+        "height": 480,
+        "width": 1152
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2896,
+        624
+      ],
+      "id": "937f7a86-651e-4613-b096-76abe9daa98b",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "resource": "block",
+        "blockId": {
+          "__rl": true,
+          "value": "{{NOTION_BLOCK_ID}}",
+          "mode": "id"
+        },
+        "blockUi": {
+          "blockValues": [
+            {
+              "type": "numbered_list_item",
+              "richText": true,
+              "text": {
+                "text": [
+                  {
+                    "text": "=\"{{ $json.alt }}\" // ",
+                    "isLink": true,
+                    "textLink": "={{ $json.url }}",
+                    "annotationUi": {}
+                  },
+                  {
+                    "text": "Large File Url // ",
+                    "isLink": true,
+                    "textLink": "={{ $json.src.large }}",
+                    "annotationUi": {}
+                  },
+                  {
+                    "text": "=Photographer: \"{{ $json.photographer }}\"",
+                    "annotationUi": {}
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        5456,
+        448
+      ],
+      "id": "83d32343-bf48-4601-85aa-0d07b6cb48e1",
+      "name": "Set Image Urls Links Only With Alt"
+    },
+    {
+      "parameters": {
+        "resource": "block",
+        "blockId": {
+          "__rl": true,
+          "value": "{{NOTION_BLOCK_ID}}",
+          "mode": "id"
+        },
+        "blockUi": {
+          "blockValues": [
+            {
+              "type": "image",
+              "url": "={{ $json.src.large }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        4928,
+        448
+      ],
+      "id": "c47d731f-d40b-4bdb-9dae-861f63ce2b7a",
+      "name": "Set Images (Insert as Image)"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        3824,
+        384
+      ],
+      "id": "eb1c2663-52b5-4335-bec8-f5b1a9e69d61",
+      "name": "Limit (Only exec once)"
+    },
+    {
+      "parameters": {
+        "jsCode": "const photos = $('Set Run Data').first().json.photos || []\nreturn photos.map(p => ({ json: p }))\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4096,
+        384
+      ],
+      "id": "85900980-3b80-4137-8285-8989706c5b44",
+      "name": "Map Photos"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        4720,
+        256
+      ],
+      "id": "79fcf937-622e-41a0-8d2b-d3bf4b1647ea",
+      "name": "Limit Status Set Executions"
+    }
+  ],
+  "connections": {
+    "Writing": {
+      "main": [
+        [
+          {
+            "node": "Chunk Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outline": {
+      "main": [
+        [
+          {
+            "node": "Writing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve Web Content": {
+      "main": [
+        [
+          {
+            "node": "Get Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor": {
+      "main": [
+        [
+          {
+            "node": "Set Extraction JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Text": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Links": {
+      "main": [
+        [
+          {
+            "node": "Retrieve Web Content",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Research Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Text": {
+      "main": [
+        [
+          {
+            "node": "Clean Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Content": {
+      "main": [
+        [
+          {
+            "node": "Set LLM JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Extraction JSON": {
+      "main": [
+        [
+          {
+            "node": "Outline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set LLM JSON": {
+      "main": [
+        [
+          {
+            "node": "Outline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion Blog Post Idea Trigger": {
+      "main": [
+        [
+          {
+            "node": "Check Idea Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Idea Status": {
+      "main": [
+        [
+          {
+            "node": "Get Page Content",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Blog Planning Context",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate Pexels Keywords",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Get Page Content": {
+      "main": [
+        [
+          {
+            "node": "Merge all Blocks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Run Data": {
+      "main": [
+        [
+          {
+            "node": "Has Links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Blog Post Status": {
+      "main": [
+        []
+      ]
+    },
+    "Chunk Data": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append Chunks to DB": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Limit (Only exec once)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append Chunks to DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge all Blocks": {
+      "main": [
+        [
+          {
+            "node": "Parse Notion Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Strucuture Block Framing & Context": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Set Run Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Guideline Blocks": {
+      "main": [
+        [
+          {
+            "node": "Strucuture Block Framing & Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Pexels Keywords": {
+      "main": [
+        [
+          {
+            "node": "Query Broad Pexels Images",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Query Specific Pexels Images",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Specific Pexels Images": {
+      "main": [
+        [
+          {
+            "node": "Limit Specific Images",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Broad Pexels Images": {
+      "main": [
+        [
+          {
+            "node": "Limit Broad Images",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Image Results": {
+      "main": [
+        [
+          {
+            "node": "Flatten Photos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Blog Planning Context": {
+      "main": [
+        [
+          {
+            "node": "Merge Guideline Blocks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Notion Content": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit Broad Images": {
+      "main": [
+        [
+          {
+            "node": "Merge Image Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit Specific Images": {
+      "main": [
+        [
+          {
+            "node": "Merge Image Results",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Flatten Photos": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Loop Over Photos": {
+      "main": [
+        [
+          {
+            "node": "Limit Status Set Executions",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Images (Insert as Image)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Images (Insert as Image)": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Photos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit (Only exec once)": {
+      "main": [
+        [
+          {
+            "node": "Map Photos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Photos": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Photos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit Status Set Executions": {
+      "main": [
+        [
+          {
+            "node": "Update Blog Post Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "{{N8N_INSTANCE_ID}}"
+  }
+}
